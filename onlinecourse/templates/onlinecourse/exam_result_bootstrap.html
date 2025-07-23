@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li>
+                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+            </li>
+            {% else %}
+            <li>
+                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Username" name="username" >
+                        <input type="password" class="form-control" placeholder="Password" name="psw" >
+                        <button class="btn btn-primary" type="submit">Login</button>
+                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                    </div>
+                </form>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% if grade >= 50 %}
+    <div class="alert alert-success text-center">
+        <h4> Glückwunsch! Du hast die Prüfung bestanden!</h4>
+        <p>Deine Punktzahl: <strong>{{ grade }}%</strong></p>
+    </div>
+    {% else %}
+    <div class="alert alert-danger text-center">
+        <h4> Leider nicht bestanden.</h4>
+        <p>Deine Punktzahl: <strong>{{ grade }}%</strong></p>
+    </div>
+    <div class="text-center mb-3">
+        <a class="btn btn-warning" href="{% url 'onlinecourse:course_details' course.id %}">Erneut versuchen</a>
+    </div>
+    {% endif %}
+
+    <h5>📝 Prüfungsergebnisse:</h5>
+    {% for question in questions %}
+    <div class="card mt-3">
+        <div class="card-header font-weight-bold">
+            Frage {{ forloop.counter }}: {{ question.question_text }}
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for choice in question.choice_set.all %}
+                <li class="list-group-item
+                    {% if choice.id in selected_ids %}
+                        {% if choice.is_correct %}
+                            list-group-item-success
+                        {% else %}
+                            list-group-item-danger
+                        {% endif %}
+                    {% elif choice.is_correct %}
+                        list-group-item-warning
+                    {% endif %}
+                ">
+                    <input type="checkbox" disabled
+                        {% if choice.id in selected_ids %}checked{% endif %}>
+                    {{ choice.choice_text }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
